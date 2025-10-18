@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Redirect</title>
+  <script>
+    let link = ""; // або "", або "null"
+
+    window.onload = function() {
+      if (link && link.toLowerCase() !== "null") {
+        console.log("Redirecting to:", link);
+        window.location.href = link;
+      } else {
+        console.log("No link provided, opening blank page");
+        window.location.href = "https://google.com";
+      }
+    };
+  </script>
+</head>
+<body>
+</body>
+</html>
