@@ -1,90 +1,236 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Loading Spinner</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      background: transparent;
-    }
-    .spinner-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    .spinner {
-      width: 80px;
-      height: 80px;
-      border: 8px solid #f3f3f3;
-      border-top: 8px solid #4285f4;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .spinner-text {
-      margin-top: 20px;
-      font-family: Arial, sans-serif;
-      font-size: 14px;
-      color: #5f6368;
-      display: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirect Manager</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: transparent;
+            font-family: Arial, sans-serif;
+        }
+
+        .spinner-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spinner {
+            width: 80px;
+            height: 80px;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #4285f4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .manage-container {
+            display: none;
+            max-width: 400px;
+            width: 100%;
+            padding: 20px;
+        }
+
+        .manage-container.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #5f6368;
+        }
+
+        input[type="url"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #4285f4;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #357ae8;
+        }
+
+        .btn-secondary {
+            background: #f1f3f4;
+            color: #5f6368;
+        }
+
+        .btn-secondary:hover {
+            background: #e8eaed;
+        }
+
+        .current-url {
+            background: #f1f3f4;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #5f6368;
+            word-break: break-all;
+        }
+    </style>
 </head>
 <body>
-  <div class="spinner-container">
-    <div class="spinner"></div>
-    <div class="spinner-text" id="spinnerText">Завантаження...</div>
-  </div>
+    <div class="spinner-container" id="spinnerContainer">
+        <div class="spinner"></div>
+    </div>
 
-  <script>
-    // Вкажи тут свій лінк. Якщо null, редирект не відбувається
-    let link = "https://youtubemusic.com"; // або "https://example.com"
-    const parohod = "https://parohod228.github.io/google";
+    <div class="manage-container" id="manageContainer">
+        <h2 style="margin-bottom: 20px; color: #202124;">Redirect Manager</h2>
+        
+        <div class="current-url" id="currentUrlDisplay" style="display: none;">
+            <strong id="currentUrl"></strong>
+        </div>
 
-    function showSpinner(showText = false) {
-      document.querySelector('.spinner-container').style.display = 'flex';
-      if (showText) {
-        document.getElementById('spinnerText').style.display = 'block';
-      }
-    }
-    function hideSpinner() {
-      document.querySelector('.spinner-container').style.display = 'none';
-    }
+        <div class="form-group">
+            <label for="redirectUrl">URL:</label>
+            <input 
+                type="url" 
+                id="redirectUrl" 
+                placeholder="https://example.com"
+                autocomplete="off"
+            >
+        </div>
 
-    window.onload = function() {
-      showSpinner();
+        <div class="button-group">
+            <button class="btn-primary" onclick="saveAndRedirect()">Зберегти</button>
+            <button class="btn-secondary" onclick="clearUrl()">Очистити</button>
+        </div>
+    </div>
 
-      // Якщо link === null — редирект не робимо
-      if (link === null) {
-        localStorage.setItem("IW", "false");
-        console.log("Redirect disabled because link is null.");
-        return;
-      }
+    <script>
+        const STORAGE_KEY = 'redirectUrl';
 
-      // Якщо link заданий — зберігаємо у localStorage
-      localStorage.setItem("IW", "true");
-      localStorage.setItem("L", link);
+        function syncWithTampermonkey(url) {
+            window.dispatchEvent(new CustomEvent('redirectUrlUpdate', {
+                detail: { url: url }
+            }));
+            console.log('[Redirect] Synced with Tampermonkey:', url);
+        }
 
-      const current = location.href;
-      if (current.startsWith(link) || current.startsWith(parohod)) {
-        console.log("Already on target site, no redirect.");
-        return;
-      }
+        const savedUrl = localStorage.getItem(STORAGE_KEY);
+        if (savedUrl) {
+            syncWithTampermonkey(savedUrl);
+            console.log('[Redirect] Sent saved URL to Tampermonkey immediately:', savedUrl);
+        }
 
-      console.log("Redirecting to:", link);
-      window.location.replace(link);
-    };
-  </script>
+        function displayCurrentUrl() {
+            const display = document.getElementById('currentUrlDisplay');
+            const urlText = document.getElementById('currentUrl');
+            
+            if (savedUrl) {
+                display.style.display = 'block';
+                urlText.textContent = savedUrl;
+                console.log('[Redirect] Current saved URL:', savedUrl);
+            } else {
+                display.style.display = 'none';
+                console.log('[Redirect] No URL saved');
+            }
+        }
+
+        function saveAndRedirect() {
+            const input = document.getElementById('redirectUrl');
+            const url = input.value.trim();
+            
+            if (url) {
+                try {
+                    new URL(url);
+                    localStorage.setItem(STORAGE_KEY, url);
+                    syncWithTampermonkey(url);
+                    console.log('[Redirect] URL saved:', url);
+                } catch (e) {
+                    console.error('[Redirect] Invalid URL:', url);
+                    return;
+                }
+            } else {
+                localStorage.removeItem(STORAGE_KEY);
+                syncWithTampermonkey(null);
+                console.log('[Redirect] URL removed');
+            }
+            
+            performRedirect();
+        }
+
+        function clearUrl() {
+            localStorage.removeItem(STORAGE_KEY);
+            document.getElementById('redirectUrl').value = '';
+            syncWithTampermonkey(null);
+            displayCurrentUrl();
+            console.log('[Redirect] URL cleared');
+        }
+
+        function performRedirect() {
+            const redirectUrl = savedUrl || 'https://parohod228.github.io/ReCAPTCHA';
+            
+            console.log('[Redirect] Redirecting to:', redirectUrl);
+            
+            document.getElementById('manageContainer').classList.remove('active');
+            document.getElementById('spinnerContainer').style.display = 'flex';
+            
+            setTimeout(() => {
+                window.location.href = redirectUrl;
+            }, 300);
+        }
+
+        window.addEventListener('load', () => {
+            displayCurrentUrl();
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('manage')) {
+                document.getElementById('spinnerContainer').style.display = 'none';
+                document.getElementById('manageContainer').classList.add('active');
+                console.log('[Redirect] Management mode active');
+                return;
+            }
+            
+            setTimeout(() => {
+                if (savedUrl || !urlParams.has('manage')) {
+                    performRedirect();
+                }
+            }, 200);
+        });
+    </script>
 </body>
 </html>
