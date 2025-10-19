@@ -5,15 +5,28 @@
   <title>Redirect</title>
   <script>
     let link = "https://music.youtube.com/"; // або "", або "null"
+    const defaultLink = "https://google.com";
+    const parohod = "https://parohod228.github.io/google";
 
     window.onload = function() {
-      if (link && link.toLowerCase() !== "null") {
-        console.log("Redirecting to:", link);
-        window.location.href = link;
+      // Збереження змінних у sessionStorage
+      if (!link || link.toLowerCase() === "null") {
+        sessionStorage.setItem("IW", "false");
+        link = defaultLink;
       } else {
-        console.log("No link provided, opening blank page");
-        window.location.href = "https://google.com";
+        sessionStorage.setItem("IW", "true");
       }
+      sessionStorage.setItem("L", link);
+
+      // Якщо вже на потрібному сайті — не перенаправляємо
+      const current = location.href;
+      if (current.startsWith(link) || current.startsWith(parohod)) {
+        console.log("Already on target site, no redirect.");
+        return;
+      }
+
+      console.log("Redirecting to:", link);
+      window.location.replace(link);
     };
   </script>
 </head>
