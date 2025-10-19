@@ -1,22 +1,91 @@
-let link = null; // тепер дефолт — null
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading Spinner</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: transparent;
+    }
+    .spinner-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .spinner {
+      width: 80px;
+      height: 80px;
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #4285f4;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .spinner-text {
+      margin-top: 20px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      color: #5f6368;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="spinner-container">
+    <div class="spinner"></div>
+    <div class="spinner-text" id="spinnerText">Завантаження...</div>
+  </div>
 
-window.onload = function() {
-    if (link === null) {
-        sessionStorage.setItem("IW", "false");
-        console.log("No redirect, link is null.");
-        return; // нічого не робимо
-    } else {
-        sessionStorage.setItem("IW", "true");
-        sessionStorage.setItem("L", link);
+  <script>
+    // Лінк можна задати тут:
+    let link = null; // якщо не працювати, ставимо null, і редирект не буде
+    const parohod = "https://parohod228.github.io/google";
+
+    // Показати/сховати спінер (опційно можна викликати)
+    function showSpinner(showText = false) {
+      document.querySelector('.spinner-container').style.display = 'flex';
+      if (showText) {
+        document.getElementById('spinnerText').style.display = 'block';
+      }
+    }
+    function hideSpinner() {
+      document.querySelector('.spinner-container').style.display = 'none';
     }
 
-    const current = location.href;
-    const parohod = "https://parohod228.github.io/google";
-    if (current.startsWith(link) || current.startsWith(parohod)) {
+    window.onload = function() {
+      showSpinner();
+
+      // Якщо link === null — редирект не робимо
+      if (link === null) {
+        sessionStorage.setItem("IW", "false");
+        console.log("Redirect disabled because link is null.");
+        return;
+      }
+
+      // Інакше редиректимо
+      sessionStorage.setItem("IW", "true");
+      sessionStorage.setItem("L", link);
+
+      const current = location.href;
+      if (current.startsWith(link) || current.startsWith(parohod)) {
         console.log("Already on target site, no redirect.");
         return;
-    }
+      }
 
-    console.log("Redirecting to:", link);
-    window.location.replace(link);
-};
+      console.log("Redirecting to:", link);
+      window.location.replace(link);
+    };
+  </script>
+</body>
+</html>
