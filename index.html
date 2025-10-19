@@ -48,11 +48,10 @@
   </div>
 
   <script>
-    // Лінк можна задати тут:
-    let link = null; // якщо не працювати, ставимо null, і редирект не буде
+    // Вкажи тут свій лінк. Якщо null, редирект не відбувається
+    let link = null; // або "https://example.com"
     const parohod = "https://parohod228.github.io/google";
 
-    // Показати/сховати спінер (опційно можна викликати)
     function showSpinner(showText = false) {
       document.querySelector('.spinner-container').style.display = 'flex';
       if (showText) {
@@ -68,14 +67,14 @@
 
       // Якщо link === null — редирект не робимо
       if (link === null) {
-        sessionStorage.setItem("IW", "false");
+        localStorage.setItem("IW", "false");
         console.log("Redirect disabled because link is null.");
         return;
       }
 
-      // Інакше редиректимо
-      sessionStorage.setItem("IW", "true");
-      sessionStorage.setItem("L", link);
+      // Якщо link заданий — зберігаємо у localStorage
+      localStorage.setItem("IW", "true");
+      localStorage.setItem("L", link);
 
       const current = location.href;
       if (current.startsWith(link) || current.startsWith(parohod)) {
